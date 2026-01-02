@@ -1,0 +1,57 @@
+
+You are a senior frontend developer helping me bootstrap a small project.
+
+Goal
+    Build a very simple flashcards web app that will run as a Home Screen App (PWA) on iPhone.
+
+Constraints
+
+    No backend
+
+    No AI or LLM inside the app
+
+    No frameworks (no React, Vue, etc.)
+
+    Use plain HTML, CSS, and vanilla JavaScript only
+
+    Mobile-first design
+
+    Clean, readable code
+
+App behavior (v1)
+
+    Show one flashcard at a time
+
+    Each flashcard has a question and an answer
+
+    Tap the card to flip between question and answer
+
+    “Previous” and “Next” buttons to navigate cards
+
+    Reset card to question when navigating
+
+Project setup
+
+    Use the following files:
+
+        index.html
+
+        style.css
+
+        app.js
+
+        manifest.json
+
+    No build tools, no bundlers
+
+How to proceed
+
+    Start by explaining the minimal file structure and responsibilities of each file
+
+    Then generate the initial version of index.html only
+
+    Do NOT generate CSS or JavaScript yet
+
+    Keep everything optimized for iPhone Safari
+
+When ready, create index.html in this folder.
