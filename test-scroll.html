@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll Test - Flashcards</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .test-result {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Flashcard Scroll Test</h1>
+        
+        <div class="test-section">
+            <div class="test-title">Test 1: CSS Properties Check</div>
+            <div id="css-test-result" class="test-result test-info">Running...</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">Test 2: Visual Scroll Test with Long Answer</div>
+            <div class="flashcard-container">
+                <div class="flashcard" id="test-flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <div class="card-content">
+                                <p class="card-label">Question</p>
+                                <p class="card-text" id="test-question">Test Question: Does the scrollbar appear when the answer is too long?</p>
+                            </div>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="card-content">
+                                <p class="card-label">Answer</p>
+                                <p class="card-text" id="test-answer">This is a very long answer that should definitely trigger the scrollbar functionality. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur? At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="flipTestCard()" style="margin-top: 20px; padding: 10px 20px; cursor: pointer;">Flip to Answer (Test Scroll)</button>
+            <div id="visual-test-result" class="test-result test-info" style="margin-top: 15px;">Flip the card to see if scrollbar appears</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">Test 3: Scrollbar Detection</div>
+            <div id="scrollbar-test-result" class="test-result test-info">Checking...</div>
+        </div>
+    </div>
+    
+    <script>
+        let testFlipped = false;
+        
+        function flipTestCard() {
+            testFlipped = !testFlipped;
+            const card = document.getElementById('test-flashcard');
+            card.classList.toggle('flipped', testFlipped);
+            
+            if (testFlipped) {
+                setTimeout(checkScrollbar, 100);
+            }
+        }
+        
+        function checkScrollbar() {
+            const answerText = document.getElementById('test-answer');
+            const hasScrollbar = answerText.scrollHeight > answerText.clientHeight;
+            const computedStyle = window.getComputedStyle(answerText);
+            const overflowY = computedStyle.overflowY;
+            
+            const result = document.getElementById('visual-test-result');
+            if (hasScrollbar && overflowY === 'auto') {
+                result.className = 'test-result test-pass';
+                result.textContent = '✓ PASS: Scrollbar is visible and content is scrollable!';
+            } else if (overflowY === 'auto') {
+                result.className = 'test-result test-info';
+                result.textContent = 'INFO: Overflow is set to auto, but content fits (this is normal for short content)';
+            } else {
+                result.className = 'test-result test-fail';
+                result.textContent = '✗ FAIL: Scrollbar not working properly. overflow-y: ' + overflowY;
+            }
+        }
+        
+        // Test 1: CSS Properties Check
+        window.addEventListener('DOMContentLoaded', function() {
+            const answerText = document.getElementById('test-answer');
+            const computedStyle = window.getComputedStyle(answerText);
+            
+            const cssTest = document.getElementById('css-test-result');
+            const checks = {
+                'overflow-y': computedStyle.overflowY === 'auto',
+                'overflow-x': computedStyle.overflowX === 'hidden',
+                'flex': computedStyle.flex === '1 1 0%' || computedStyle.flex === '1',
+                'min-height': computedStyle.minHeight === '0px' || computedStyle.minHeight === '0',
+            };
+            
+            const allPass = Object.values(checks).every(v => v === true);
+            const failed = Object.entries(checks).filter(([k, v]) => !v).map(([k]) => k);
+            
+            if (allPass) {
+                cssTest.className = 'test-result test-pass';
+                cssTest.innerHTML = '✓ PASS: All CSS properties are correctly set:<br>' + 
+                    Object.keys(checks).map(k => `&nbsp;&nbsp;• ${k}: ${computedStyle[k] || 'OK'}`).join('<br>');
+            } else {
+                cssTest.className = 'test-result test-fail';
+                cssTest.innerHTML = '✗ FAIL: Some CSS properties are incorrect:<br>' + 
+                    failed.map(k => `&nbsp;&nbsp;• ${k}: ${computedStyle[k]}`).join('<br>');
+            }
+            
+            // Test 3: Scrollbar Detection
+            setTimeout(() => {
+                const scrollbarTest = document.getElementById('scrollbar-test-result');
+                const cardContent = document.querySelector('.card-content');
+                const cardContentStyle = window.getComputedStyle(cardContent);
+                
+                const scrollbarChecks = {
+                    'card-content overflow': cardContentStyle.overflow === 'hidden',
+                    'card-content flex-direction': cardContentStyle.flexDirection === 'column',
+                    'card-content height': cardContentStyle.height !== 'auto' && cardContentStyle.height !== '',
+                };
+                
+                const scrollbarAllPass = Object.values(scrollbarChecks).every(v => v === true);
+                
+                if (scrollbarAllPass) {
+                    scrollbarTest.className = 'test-result test-pass';
+                    scrollbarTest.innerHTML = '✓ PASS: Card content container is properly configured for scrolling';
+                } else {
+                    scrollbarTest.className = 'test-result test-fail';
+                    scrollbarTest.innerHTML = '✗ FAIL: Card content container configuration issues';
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+

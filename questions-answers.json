@@ -33,7 +33,7 @@
     ]
   },
   {
-    "question": "What is one right or freedom from the First Amendment?*",
+    "question": "What is one right or freedom from the First Amendment?",
     "answers": [
       "speech",
       "religion",
@@ -71,7 +71,7 @@
     ]
   },
   {
-    "question": "What is the economic system in the United States?*",
+    "question": "What is the economic system in the United States?",
     "answers": [
       "capitalist economy",
       "market economy"
@@ -87,7 +87,7 @@
     ]
   },
   {
-    "question": "Name one branch or part of the government.*",
+    "question": "Name one branch or part of the government.",
     "answers": [
       "Congress",
       "legislative",
@@ -119,7 +119,7 @@
     ]
   },
   {
-    "question": "What are the two parts of the U.S. Congress?*",
+    "question": "What are the two parts of the U.S. Congress?",
     "answers": [
       "the Senate and House (of Representatives)"
     ]
@@ -137,7 +137,7 @@
     ]
   },
   {
-    "question": "Who is one of your state’s U.S. Senators now?*",
+    "question": "Who is one of your state’s U.S. Senators now?",
     "answers": [
       "Answers will vary. [District of Columbia residents and residents of U.S. territories should answer that D.C.  (or the territory where the applicant lives) has no U.S. Senators.]"
     ]
@@ -181,13 +181,13 @@
     ]
   },
   {
-    "question": "In what month do we vote for President?*",
+    "question": "In what month do we vote for President?",
     "answers": [
       "November"
     ]
   },
   {
-    "question": "What is the name of the President of the United States now?*",
+    "question": "What is the name of the President of the United States now?",
     "answers": [
       "Visit uscis.gov/citizenship/testupdates for the name of the President of the United States."
     ]
@@ -292,8 +292,9 @@
     ]
   },
   {
-    "question": "Under our Constitution, some powers belong to the states. What is one power of the states?  ▪ provide schooling and education",
+    "question": "Under our Constitution, some powers belong to the states. What is one power of the states?",
     "answers": [
+      "provide schooling and education",
       "provide protection (police)",
       "provide safety (fire departments)",
       "give a driver’s license",
@@ -307,13 +308,13 @@
     ]
   },
   {
-    "question": "What is the capital of your state?*",
+    "question": "What is the capital of your state?",
     "answers": [
       "Answers will vary. [District of Columbia residents should answer that D.C. is not a state and does not have a  capital. Residents of U.S. territories should name the capital of the territory.]"
     ]
   },
   {
-    "question": "What are the two major political parties in the United States?*",
+    "question": "What are the two major political parties in the United States?",
     "answers": [
       "Democratic and Republican"
     ]
@@ -331,15 +332,16 @@
     ]
   },
   {
-    "question": "There are four amendments to the Constitution about who can vote. Describe one of them. ▪ Citizens eighteen (18) and older (can vote).",
+    "question": "There are four amendments to the Constitution about who can vote. Describe one of them.",
     "answers": [
+      "Citizens eighteen (18) and older (can vote).",
       "You don’t have to pay (a poll tax) to vote.",
       "Any citizen can vote. (Women and men can vote.)",
       "A male citizen of any race (can vote)."
     ]
   },
   {
-    "question": "What is one responsibility that is only for United States citizens?*",
+    "question": "What is one responsibility that is only for United States citizens?",
     "answers": [
       "serve on a jury",
       "vote in a federal election"
@@ -382,7 +384,7 @@
     ]
   },
   {
-    "question": "How old do citizens have to be to vote for President?*",
+    "question": "How old do citizens have to be to vote for President?",
     "answers": [
       "eighteen (18) and older"
     ]
@@ -403,7 +405,7 @@
     ]
   },
   {
-    "question": "When is the last day you can send in federal income tax forms?*",
+    "question": "When is the last day you can send in federal income tax forms?",
     "answers": [
       "April 15"
     ]
@@ -492,8 +494,9 @@
     ]
   },
   {
-    "question": "The Federalist Papers supported the passage of the U.S. Constitution. Name one of the writers. ▪ (James) Madison",
+    "question": "The Federalist Papers supported the passage of the U.S. Constitution. Name one of the writers.",
     "answers": [
+      "(James) Madison",
       "(Alexander) Hamilton",
       "(John) Jay",
       "Publius"
@@ -516,7 +519,7 @@
     ]
   },
   {
-    "question": "Who was the first President?*",
+    "question": "Who was the first President?",
     "answers": [
       "(George) Washington"
     ]
@@ -553,7 +556,7 @@
     ]
   },
   {
-    "question": "What was one important thing that Abraham Lincoln did?*",
+    "question": "What was one important thing that Abraham Lincoln did?",
     "answers": [
       "freed the slaves (Emancipation Proclamation)",
       "saved (or preserved) the Union",
@@ -577,7 +580,7 @@
     ]
   },
   {
-    "question": "Name one war fought by the United States in the 1900s.*",
+    "question": "Name one war fought by the United States in the 1900s.",
     "answers": [
       "World War I",
       "World War II",
@@ -623,7 +626,7 @@
     ]
   },
   {
-    "question": "What did Martin Luther King, Jr. do?*",
+    "question": "What did Martin Luther King, Jr. do?",
     "answers": [
       "fought for civil rights",
       "worked for equality for all Americans"
@@ -719,13 +722,13 @@
     ]
   },
   {
-    "question": "What is the capital of the United States?*",
+    "question": "What is the capital of the United States?",
     "answers": [
       "Washington, D.C."
     ]
   },
   {
-    "question": "Where is the Statue of Liberty?*",
+    "question": "Where is the Statue of Liberty?",
     "answers": [
       "New York (Harbor)",
       "Liberty Island"
@@ -739,7 +742,7 @@
     ]
   },
   {
-    "question": "Why does the flag have 50 stars?*",
+    "question": "Why does the flag have 50 stars?",
     "answers": [
       "because there is one star for each state",
       "because each star represents a state",
@@ -753,7 +756,7 @@
     ]
   },
   {
-    "question": "When do we celebrate Independence Day?*",
+    "question": "When do we celebrate Independence Day?",
     "answers": [
       "July 4"
     ]
