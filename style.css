@@ -114,6 +114,23 @@ body {
     padding-right: 5px;
 }
 
+.card-text a {
+    color: #667eea;
+    text-decoration: underline;
+    word-break: break-all;
+    transition: color 0.2s ease;
+}
+
+.card-text a:hover,
+.card-text a:active {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+.card-text a:visited {
+    color: #764ba2;
+}
+
 /* Navigation buttons */
 .navigation {
     display: flex;

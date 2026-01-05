@@ -28,16 +28,16 @@ async function loadFlashcards() {
         init();
     } catch (error) {
         console.error('Error loading flashcards:', error);
-        questionText.textContent = "Error loading flashcards";
-        answerText.textContent = "Please check that questions-answers.json exists";
+        questionText.innerHTML = "Error loading flashcards";
+        answerText.innerHTML = "Please check that questions-answers.json exists";
     }
 }
 
 // Initialize the app
 function init() {
     if (flashcards.length === 0) {
-        questionText.textContent = "No flashcards available";
-        answerText.textContent = "No flashcards available";
+        questionText.innerHTML = "No flashcards available";
+        answerText.innerHTML = "No flashcards available";
         return;
     }
     
@@ -47,19 +47,52 @@ function init() {
     updateAnswerButton();
 }
 
+// Convert URLs in text to clickable links
+function convertUrlsToLinks(text) {
+    if (!text) return '';
+    
+    // URL regex pattern: matches http://, https://, and www. URLs
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+    
+    // Escape HTML in text first to prevent XSS, but preserve newlines
+    let escapedText = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    
+    // Replace URLs with clickable links
+    return escapedText.replace(urlRegex, (match) => {
+        // Ensure URL has protocol
+        let url = match;
+        if (match.toLowerCase().startsWith('www.')) {
+            url = 'https://' + match;
+        }
+        
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${match}</a>`;
+    });
+}
+
 // Render the current card
 function renderCard() {
     const card = flashcards[currentCardIndex];
-    questionText.textContent = card.question;
+    
+    // Convert question text and make URLs clickable
+    const questionHtml = convertUrlsToLinks(card.question);
+    questionText.innerHTML = questionHtml;
     
     // Display all answers (join multiple answers with newlines or bullets)
     if (card.answers && card.answers.length > 0) {
         // If multiple answers, display them as a bulleted list
         if (card.answers.length === 1) {
-            answerText.textContent = card.answers[0];
+            const answerHtml = convertUrlsToLinks(card.answers[0]);
+            answerText.innerHTML = answerHtml;
         } else {
             // Format multiple answers with bullet points
-            answerText.textContent = card.answers.map(answer => `• ${answer}`).join('\n');
+            const answersHtml = card.answers.map(answer => {
+                const linkified = convertUrlsToLinks(answer);
+                return `• ${linkified}`;
+            }).join('<br>');
+            answerText.innerHTML = answersHtml;
         }
     } else {
         answerText.textContent = "No answer available";
@@ -160,6 +193,18 @@ answerButton.addEventListener('click', (e) => e.stopPropagation());
 prevButton.addEventListener('click', (e) => e.stopPropagation());
 nextButton.addEventListener('click', (e) => e.stopPropagation());
 shuffleButton.addEventListener('click', (e) => e.stopPropagation());
+
+// Prevent card flip when clicking links inside cards
+questionText.addEventListener('click', (e) => {
+    if (e.target.tagName === 'A') {
+        e.stopPropagation();
+    }
+});
+answerText.addEventListener('click', (e) => {
+    if (e.target.tagName === 'A') {
+        e.stopPropagation();
+    }
+});
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {

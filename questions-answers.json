@@ -139,6 +139,7 @@
   {
     "question": "Who is one of your state’s U.S. Senators now?",
     "answers": [
+      "https://www.senate.gov/senators/",
       "Answers will vary. [District of Columbia residents and residents of U.S. territories should answer that D.C.  (or the territory where the applicant lives) has no U.S. Senators.]"
     ]
   },
@@ -157,6 +158,7 @@
   {
     "question": "Name your U.S. Representative.",
     "answers": [
+      "https://www.house.gov/representatives/find-your-representative",
       "Answers will vary. [Residents of territories with nonvoting Delegates or Resident Commissioners may  provide the name of that Delegate or Commissioner. Also acceptable is any statement that the territory has  no (voting) Representatives in Congress.]"
     ]
   },
@@ -189,7 +191,8 @@
   {
     "question": "What is the name of the President of the United States now?",
     "answers": [
-      "Visit uscis.gov/citizenship/testupdates for the name of the President of the United States."
+      "https://www.whitehouse.gov/administration/",
+      "Visit https://www.whitehouse.gov/administration/ for the name of the President of the United States."
     ]
   },
   {
