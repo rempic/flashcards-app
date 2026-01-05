@@ -18,11 +18,18 @@ const cardCounter = document.getElementById('card-counter');
 // Load flashcards from JSON file
 async function loadFlashcards() {
     try {
-        const response = await fetch('questions-answers.json');
+        // Add cache-busting parameter to ensure latest version is loaded
+        const cacheBuster = new Date().getTime();
+        const response = await fetch(`questions-answers.json?v=${cacheBuster}`, {
+            cache: 'no-store'
+        });
         if (!response.ok) {
             throw new Error('Failed to load flashcards');
         }
         flashcards = await response.json();
+        
+        // Log for debugging
+        console.log(`Loaded ${flashcards.length} flashcards`);
         
         // Initialize the app after loading
         init();
