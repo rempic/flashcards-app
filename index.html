@@ -79,6 +79,16 @@
     </div>
     
     <script src="app.js"></script>
+    <script>
+        // Fallback: If script didn't load, show error
+        setTimeout(function() {
+            const questionEl = document.getElementById('question-text');
+            if (questionEl && questionEl.innerHTML === 'Loading...') {
+                questionEl.innerHTML = 'Script may not have loaded. Check console.';
+                questionEl.style.color = 'red';
+            }
+        }, 3000);
+    </script>
 </body>
 </html>
 

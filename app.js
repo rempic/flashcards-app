@@ -3,6 +3,11 @@ let flashcards = [];
 let allFlashcards = []; // Keep original unfiltered list
 let filteredFlashcards = []; // Current filtered list
 
+// Debug: Log that script is loaded
+console.log('✓ app.js script loaded');
+console.log('Current URL:', window.location.href);
+console.log('Protocol:', window.location.protocol);
+
 // App state
 let currentCardIndex = 0;
 let isFlipped = false;
@@ -45,45 +50,79 @@ async function loadFlashcards() {
         return;
     }
     
+    // Show loading state
+    if (questionText) {
+        questionText.innerHTML = 'Loading flashcards...';
+    }
+    if (answerText) {
+        answerText.innerHTML = 'Please wait...';
+    }
+    
     try {
         // Add cache-busting parameter to ensure latest version is loaded
         const cacheBuster = new Date().getTime();
-        let response;
+        const jsonUrl = `questions-answers.json?v=${cacheBuster}`;
         
+        console.log('Attempting to fetch:', jsonUrl);
+        console.log('Current URL:', window.location.href);
+        
+        let response;
         try {
             // Try relative path first
-            response = await fetch(`questions-answers.json?v=${cacheBuster}`, {
-                cache: 'no-store',
-                mode: 'cors'
+            response = await fetch(jsonUrl, {
+                cache: 'no-store'
             });
+            console.log('Fetch response status:', response.status);
         } catch (fetchError) {
-            // If fetch fails, try with absolute path or different approach
-            console.warn('Fetch failed with relative path, error:', fetchError);
-            try {
-                // Try with ./ prefix for mobile
-                response = await fetch(`./questions-answers.json?v=${cacheBuster}`, {
-                    cache: 'no-store',
-                    mode: 'cors'
-                });
-            } catch (secondError) {
-                console.error('Both fetch attempts failed:', secondError);
-                throw new Error('Cannot load flashcards. Please ensure you are using a web server (e.g., python3 -m http.server 8000) and accessing via http://localhost:8000');
+            console.error('Fetch error:', fetchError);
+            // Show error immediately
+            if (questionText) {
+                questionText.innerHTML = `Fetch Error: ${fetchError.message}`;
             }
+            if (answerText) {
+                answerText.innerHTML = 'Check console and ensure server is running';
+            }
+            throw fetchError;
         }
         
         if (!response.ok) {
-            throw new Error(`Failed to load flashcards: ${response.status} ${response.statusText}`);
+            const errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+            console.error('Response not OK:', errorMsg);
+            if (questionText) {
+                questionText.innerHTML = `Error: ${errorMsg}`;
+            }
+            if (answerText) {
+                answerText.innerHTML = 'Make sure questions-answers.json exists';
+            }
+            throw new Error(errorMsg);
         }
         
         const loadedFlashcards = await response.json();
+        console.log('JSON parsed, got', loadedFlashcards?.length || 0, 'items');
         
         // Validate loaded data
         if (!Array.isArray(loadedFlashcards)) {
-            throw new Error('Invalid flashcards data: not an array');
+            const errorMsg = 'Invalid data: not an array';
+            console.error(errorMsg, typeof loadedFlashcards);
+            if (questionText) {
+                questionText.innerHTML = `Error: ${errorMsg}`;
+            }
+            if (answerText) {
+                answerText.innerHTML = 'JSON file format is incorrect';
+            }
+            throw new Error(errorMsg);
         }
         
         if (loadedFlashcards.length === 0) {
-            throw new Error('No flashcards found in the JSON file');
+            const errorMsg = 'No flashcards in file';
+            console.error(errorMsg);
+            if (questionText) {
+                questionText.innerHTML = `Error: ${errorMsg}`;
+            }
+            if (answerText) {
+                answerText.innerHTML = 'The JSON file is empty';
+            }
+            throw new Error(errorMsg);
         }
         
         allFlashcards = loadedFlashcards;
@@ -91,7 +130,7 @@ async function loadFlashcards() {
         filteredFlashcards = loadedFlashcards;
         
         // Log for debugging
-        console.log(`Successfully loaded ${flashcards.length} flashcards`);
+        console.log(`✓ Successfully loaded ${flashcards.length} flashcards`);
         
         // Initialize the app after loading
         await init();
@@ -100,9 +139,11 @@ async function loadFlashcards() {
         const errorMsg = error.message || 'Unknown error';
         if (questionText) {
             questionText.innerHTML = `Error: ${errorMsg}`;
+            questionText.style.color = 'red';
         }
         if (answerText) {
-            answerText.innerHTML = "To fix: Run 'python3 -m http.server 8000' in the project folder, then open http://localhost:8000";
+            answerText.innerHTML = `URL: ${window.location.href}<br>Use: python3 -m http.server 8000`;
+            answerText.style.color = 'red';
         }
     }
 }
