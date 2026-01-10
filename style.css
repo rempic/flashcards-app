@@ -526,3 +526,24 @@ body {
     background: rgba(102, 126, 234, 0.5);
 }
 
+/* Mobile responsive styles */
+@media screen and (max-width: 768px) {
+    .flashcard-buttons {
+        justify-content: flex-start;
+    }
+    
+    .card-text {
+        font-size: 22px !important;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .flashcard-buttons {
+        justify-content: flex-start;
+    }
+    
+    .card-text {
+        font-size: 22px !important;
+    }
+}
+
