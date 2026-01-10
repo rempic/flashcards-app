@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Flashcards">
+    <meta name="theme-color" content="#000000">
+    <title>Flashcards</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="card-content">
+                            <p class="card-label">Question</p>
+                            <p class="card-text" id="question-text">Loading...</p>
+                        </div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="card-content">
+                            <p class="card-label">Answer</p>
+                            <p class="card-text" id="answer-text">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="answer-button" id="answer-button" aria-label="Show answer">Show Answer</button>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prev-button" aria-label="Previous card">Previous</button>
+            <button class="nav-button" id="next-button" aria-label="Next card">Next</button>
+        </div>
+        
+        <button class="shuffle-button" id="shuffle-button" aria-label="Shuffle cards">Shuffle</button>
+        
+        <div class="card-counter">
+            <span id="card-counter">1 / 1</span>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
+
