@@ -569,10 +569,17 @@ body {
     
     .flashcard-bottom {
         margin-top: 8px;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .card-counter {
         font-size: 13px;
+        text-align: left;
+    }
+    
+    .flashcard-buttons {
+        justify-content: flex-end;
     }
     
     .critical-button,
@@ -656,10 +663,17 @@ body {
     
     .flashcard-bottom {
         margin-top: 6px;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .card-counter {
         font-size: 12px;
+        text-align: left;
+    }
+    
+    .flashcard-buttons {
+        justify-content: flex-end;
     }
     
     .critical-button,
