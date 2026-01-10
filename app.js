@@ -882,8 +882,6 @@ function setupEventListeners() {
 // Initialize when DOM is ready
 function startApp() {
     console.log('Starting app initialization...');
-    console.log('DOM ready state:', document.readyState);
-    console.log('User agent:', navigator.userAgent);
     
     // Mark that app is initializing (prevents fallback message)
     if (typeof window !== 'undefined') {
@@ -893,8 +891,7 @@ function startApp() {
     // Initialize DOM elements first
     if (!initDOMElements()) {
         console.error('Failed to initialize DOM elements. Retrying...');
-        const delay = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 300 : 100;
-        setTimeout(startApp, delay);
+        setTimeout(startApp, 100);
         return;
     }
     
@@ -916,7 +913,6 @@ function startApp() {
     console.log('Loading flashcards...');
     loadFlashcards().catch(error => {
         console.error('Failed to load flashcards:', error);
-        // Show error on screen for mobile debugging
         if (questionText) {
             questionText.innerHTML = `Error: ${error.message || 'Failed to load'}`;
             questionText.style.color = 'red';
@@ -928,73 +924,11 @@ function startApp() {
     });
 }
 
-// Mobile browsers sometimes need different initialization
-const isMobile = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent);
-console.log('Is mobile device:', isMobile);
-
-// Wrap initialization in try-catch to catch any errors
-try {
-    if (document.readyState === 'loading') {
-        console.log('DOM is loading, waiting for DOMContentLoaded...');
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-                startApp();
-            } catch (error) {
-                console.error('Error in startApp (DOMContentLoaded):', error);
-                showError('Initialization error: ' + error.message);
-            }
-        });
-        // Also try on window load as backup for mobile
-        if (isMobile) {
-            window.addEventListener('load', () => {
-                console.log('Window load event fired');
-                try {
-                    if (flashcards.length === 0) {
-                        console.log('Flashcards not loaded yet, retrying...');
-                        setTimeout(() => {
-                            try {
-                                startApp();
-                            } catch (error) {
-                                console.error('Error in startApp (window load):', error);
-                                showError('Initialization error: ' + error.message);
-                            }
-                        }, 100);
-                    }
-                } catch (error) {
-                    console.error('Error in window load handler:', error);
-                }
-            });
-        }
-    } else {
-        console.log('DOM already loaded, starting app...');
-        // DOM already loaded, but wait a tick to ensure everything is ready
-        // Use longer delay for mobile
-        const delay = isMobile ? 100 : 0;
-        setTimeout(() => {
-            try {
-                startApp();
-            } catch (error) {
-                console.error('Error in startApp (immediate):', error);
-                showError('Initialization error: ' + error.message);
-            }
-        }, delay);
-    }
-} catch (error) {
-    console.error('Fatal error during initialization:', error);
-    showError('Fatal error: ' + error.message);
-}
-
-// Helper function to show errors on screen
-function showError(message) {
-    const questionEl = document.getElementById('question-text');
-    const answerEl = document.getElementById('answer-text');
-    if (questionEl) {
-        questionEl.innerHTML = message;
-        questionEl.style.color = 'red';
-    }
-    if (answerEl) {
-        answerEl.innerHTML = 'Please check the console for details';
-        answerEl.style.color = 'red';
-    }
+// Simple initialization - same for desktop and mobile
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startApp);
+} else {
+    // DOM already loaded
+    startApp();
 }
 
