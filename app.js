@@ -8,6 +8,7 @@ let currentCardIndex = 0;
 let isFlipped = false;
 let notesExpanded = false;
 let currentFilter = 'all'; // 'all', 'critical', 'non-critical'
+let isTogglingCritical = false; // Flag to prevent re-entrancy in toggleCritical
 
 // DOM elements
 const flashcard = document.getElementById('flashcard');
@@ -461,10 +462,19 @@ function updateCriticalButton(isCritical) {
 }
 
 async function toggleCritical() {
-    const card = filteredFlashcards[currentCardIndex];
-    if (!card || !card.id) return;
+    // Lock to prevent concurrent executions
+    if (isTogglingCritical) {
+        return;
+    }
+    isTogglingCritical = true;
     
-    // Save the current card ID to restore position after toggle
+    const card = filteredFlashcards[currentCardIndex];
+    if (!card || !card.id) {
+        isTogglingCritical = false;
+        return;
+    }
+    
+    // Save the current card ID and index BEFORE any async operations
     const currentCardId = card.id;
     const savedIndex = currentCardIndex;
     
@@ -478,21 +488,31 @@ async function toggleCritical() {
             updateCriticalButton(true);
         }
         
-        // Ensure we're still on the same card - find it in the filtered list
-        const cardIndex = filteredFlashcards.findIndex(c => c.id === currentCardId);
-        if (cardIndex !== -1) {
-            currentCardIndex = cardIndex;
-        } else {
-            // If card is no longer in filtered list (shouldn't happen since we don't re-apply filter),
-            // but if it does, restore the saved index
-            currentCardIndex = savedIndex;
-            // Make sure index is within bounds
-            if (currentCardIndex >= filteredFlashcards.length) {
-                currentCardIndex = Math.max(0, filteredFlashcards.length - 1);
+        // CRITICAL: Restore the saved index immediately after toggle
+        // Always restore to the exact same index - the card should still be there
+        // since we're not re-applying the filter
+        currentCardIndex = savedIndex;
+        
+        // Safety check: ensure index is within bounds
+        if (currentCardIndex >= filteredFlashcards.length) {
+            currentCardIndex = Math.max(0, filteredFlashcards.length - 1);
+        }
+        
+        // Double-check: verify the card at this index is still the same
+        const cardAtIndex = filteredFlashcards[currentCardIndex];
+        if (!cardAtIndex || cardAtIndex.id !== currentCardId) {
+            // If card changed (shouldn't happen), find it in the list
+            const cardIndex = filteredFlashcards.findIndex(c => c.id === currentCardId);
+            if (cardIndex !== -1) {
+                currentCardIndex = cardIndex;
+            } else {
+                // Last resort: restore saved index even if out of bounds
+                currentCardIndex = savedIndex;
             }
         }
         
         // Don't re-apply filter - keep the current card visible
+        // Don't call renderCard - it will reset the card to question side
     } catch (error) {
         console.error('Error toggling critical state:', error);
         // Restore index on error
@@ -500,6 +520,8 @@ async function toggleCritical() {
         if (currentCardIndex >= filteredFlashcards.length) {
             currentCardIndex = Math.max(0, filteredFlashcards.length - 1);
         }
+    } finally {
+        isTogglingCritical = false;
     }
 }
 
@@ -562,7 +584,8 @@ function shouldFlipCard(e) {
     if (e.target.closest('.flashcard-buttons') || 
         e.target.closest('button') || 
         e.target.closest('.answer-navigation-wrapper') ||
-        e.target.closest('.filter-section')) {
+        e.target.closest('.filter-section') ||
+        e.target.closest('.card-counter')) {
         return false;
     }
     return true;
@@ -593,7 +616,14 @@ notesClearButton.addEventListener('click', clearCurrentNote);
 
 // Critical event listeners - handle both click and touch events
 let criticalButtonTouchHandled = false;
-let isTogglingCritical = false; // Flag to prevent re-entrancy
+// isTogglingCritical is declared at the top level to prevent re-entrancy
+
+// Prevent any events from the button container from bubbling
+if (flashcardButtonsContainer) {
+    flashcardButtonsContainer.addEventListener('click', (e) => e.stopPropagation());
+    flashcardButtonsContainer.addEventListener('touchstart', (e) => e.stopPropagation());
+    flashcardButtonsContainer.addEventListener('touchend', (e) => e.stopPropagation());
+}
 
 criticalButton.addEventListener('touchstart', (e) => {
     e.stopPropagation();
@@ -602,11 +632,8 @@ criticalButton.addEventListener('touchstart', (e) => {
 criticalButton.addEventListener('touchend', async (e) => {
     e.stopPropagation();
     e.preventDefault();
-    if (isTogglingCritical) return; // Prevent double execution
     criticalButtonTouchHandled = true;
-    isTogglingCritical = true;
     await toggleCritical();
-    isTogglingCritical = false;
     // Reset after a short delay to allow click event to be ignored
     setTimeout(() => {
         criticalButtonTouchHandled = false;
@@ -616,12 +643,9 @@ criticalButton.addEventListener('touchend', async (e) => {
 criticalButton.addEventListener('click', async (e) => {
     e.stopPropagation();
     e.preventDefault();
-    if (isTogglingCritical) return; // Prevent double execution
     // Ignore click if it was already handled by touch event (mobile)
     if (!criticalButtonTouchHandled) {
-        isTogglingCritical = true;
         await toggleCritical();
-        isTogglingCritical = false;
     }
 });
 
