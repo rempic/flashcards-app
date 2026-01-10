@@ -464,6 +464,10 @@ async function toggleCritical() {
     const card = filteredFlashcards[currentCardIndex];
     if (!card || !card.id) return;
     
+    // Save the current card ID to restore position after toggle
+    const currentCardId = card.id;
+    const savedIndex = currentCardIndex;
+    
     try {
         const isCritical = await isCardCritical(card.id);
         if (isCritical) {
@@ -473,9 +477,29 @@ async function toggleCritical() {
             await markCardAsCritical(card.id);
             updateCriticalButton(true);
         }
+        
+        // Ensure we're still on the same card - find it in the filtered list
+        const cardIndex = filteredFlashcards.findIndex(c => c.id === currentCardId);
+        if (cardIndex !== -1) {
+            currentCardIndex = cardIndex;
+        } else {
+            // If card is no longer in filtered list (shouldn't happen since we don't re-apply filter),
+            // but if it does, restore the saved index
+            currentCardIndex = savedIndex;
+            // Make sure index is within bounds
+            if (currentCardIndex >= filteredFlashcards.length) {
+                currentCardIndex = Math.max(0, filteredFlashcards.length - 1);
+            }
+        }
+        
         // Don't re-apply filter - keep the current card visible
     } catch (error) {
         console.error('Error toggling critical state:', error);
+        // Restore index on error
+        currentCardIndex = savedIndex;
+        if (currentCardIndex >= filteredFlashcards.length) {
+            currentCardIndex = Math.max(0, filteredFlashcards.length - 1);
+        }
     }
 }
 
@@ -569,25 +593,35 @@ notesClearButton.addEventListener('click', clearCurrentNote);
 
 // Critical event listeners - handle both click and touch events
 let criticalButtonTouchHandled = false;
+let isTogglingCritical = false; // Flag to prevent re-entrancy
+
 criticalButton.addEventListener('touchstart', (e) => {
     e.stopPropagation();
 });
+
 criticalButton.addEventListener('touchend', async (e) => {
     e.stopPropagation();
     e.preventDefault();
+    if (isTogglingCritical) return; // Prevent double execution
     criticalButtonTouchHandled = true;
+    isTogglingCritical = true;
     await toggleCritical();
+    isTogglingCritical = false;
     // Reset after a short delay to allow click event to be ignored
     setTimeout(() => {
         criticalButtonTouchHandled = false;
     }, 300);
 });
+
 criticalButton.addEventListener('click', async (e) => {
     e.stopPropagation();
     e.preventDefault();
+    if (isTogglingCritical) return; // Prevent double execution
     // Ignore click if it was already handled by touch event (mobile)
     if (!criticalButtonTouchHandled) {
+        isTogglingCritical = true;
         await toggleCritical();
+        isTogglingCritical = false;
     }
 });
 
