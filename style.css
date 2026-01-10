@@ -21,28 +21,36 @@ body {
 
 .app-container {
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 30px;
 }
 
+/* Flashcard wrapper */
+.flashcard-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    width: 100%;
+    max-width: 500px;
+}
+
 /* Flashcard container */
 .flashcard-container {
-    width: 100%;
+    flex: 1;
     perspective: 1000px;
     cursor: pointer;
     position: relative;
 }
 
 .flashcard-buttons {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
     display: flex;
+    flex-direction: column;
     gap: 10px;
-    z-index: 10;
+    align-items: center;
+    margin-top: 0;
 }
 
 
