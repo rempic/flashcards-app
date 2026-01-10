@@ -473,8 +473,7 @@ async function toggleCritical() {
             await markCardAsCritical(card.id);
             updateCriticalButton(true);
         }
-        // Re-apply filter if needed
-        await applyFilter(currentFilter);
+        // Don't re-apply filter - keep the current card visible
     } catch (error) {
         console.error('Error toggling critical state:', error);
     }
