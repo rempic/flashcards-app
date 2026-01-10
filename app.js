@@ -34,32 +34,65 @@ const criticalButton = document.getElementById('critical-button');
 
 // Filter DOM elements
 const filterSelect = document.getElementById('filter-select');
+const flashcardButtonsContainer = document.querySelector('.flashcard-buttons');
 
 // Load flashcards from JSON file
 async function loadFlashcards() {
+    // Ensure DOM elements are available
+    if (!questionText || !answerText) {
+        console.error('DOM elements not found. Retrying...');
+        setTimeout(loadFlashcards, 100);
+        return;
+    }
+    
     try {
         // Add cache-busting parameter to ensure latest version is loaded
         const cacheBuster = new Date().getTime();
-        const response = await fetch(`questions-answers.json?v=${cacheBuster}`, {
-            cache: 'no-store'
-        });
-        if (!response.ok) {
-            throw new Error('Failed to load flashcards');
+        let response;
+        
+        try {
+            response = await fetch(`questions-answers.json?v=${cacheBuster}`, {
+                cache: 'no-store'
+            });
+        } catch (fetchError) {
+            // If fetch fails (likely CORS issue with file://), try alternative approach
+            console.warn('Fetch failed, trying alternative method:', fetchError);
+            throw new Error('Cannot load flashcards. Please use a local web server (e.g., python3 -m http.server 8000) instead of opening the file directly.');
         }
+        
+        if (!response.ok) {
+            throw new Error(`Failed to load flashcards: ${response.status} ${response.statusText}`);
+        }
+        
         const loadedFlashcards = await response.json();
+        
+        // Validate loaded data
+        if (!Array.isArray(loadedFlashcards)) {
+            throw new Error('Invalid flashcards data: not an array');
+        }
+        
+        if (loadedFlashcards.length === 0) {
+            throw new Error('No flashcards found in the JSON file');
+        }
+        
         allFlashcards = loadedFlashcards;
         flashcards = loadedFlashcards;
         filteredFlashcards = loadedFlashcards;
         
         // Log for debugging
-        console.log(`Loaded ${flashcards.length} flashcards`);
+        console.log(`Successfully loaded ${flashcards.length} flashcards`);
         
         // Initialize the app after loading
-        init();
+        await init();
     } catch (error) {
         console.error('Error loading flashcards:', error);
-        questionText.innerHTML = "Error loading flashcards";
-        answerText.innerHTML = "Please check that questions-answers.json exists";
+        const errorMsg = error.message || 'Unknown error';
+        if (questionText) {
+            questionText.innerHTML = `Error: ${errorMsg}`;
+        }
+        if (answerText) {
+            answerText.innerHTML = "To fix: Run 'python3 -m http.server 8000' in the project folder, then open http://localhost:8000";
+        }
     }
 }
 
@@ -106,7 +139,26 @@ function convertUrlsToLinks(text) {
 
 // Render the current card
 async function renderCard() {
+    // Safety check: ensure we have cards and valid index
+    if (!filteredFlashcards || filteredFlashcards.length === 0) {
+        console.error('No flashcards available to render');
+        questionText.innerHTML = "No flashcards available";
+        answerText.innerHTML = "No flashcards available";
+        return;
+    }
+    
+    // Ensure index is within bounds
+    if (currentCardIndex < 0 || currentCardIndex >= filteredFlashcards.length) {
+        currentCardIndex = 0;
+    }
+    
     const card = filteredFlashcards[currentCardIndex];
+    if (!card) {
+        console.error('Card not found at index:', currentCardIndex);
+        questionText.innerHTML = "Card not found";
+        answerText.innerHTML = "Card not found";
+        return;
+    }
     
     // Convert question text and make URLs clickable
     const questionHtml = convertUrlsToLinks(card.question);
@@ -665,15 +717,20 @@ let criticalButtonTouchHandled = false;
 // isTogglingCritical is declared at the top level to prevent re-entrancy
 
 // Prevent any events from the button container from bubbling
-if (flashcardButtonsContainer) {
-    flashcardButtonsContainer.addEventListener('click', (e) => e.stopPropagation());
-    flashcardButtonsContainer.addEventListener('touchstart', (e) => e.stopPropagation());
-    flashcardButtonsContainer.addEventListener('touchend', (e) => e.stopPropagation());
+// This will be set up after DOM is ready
+function setupButtonContainerEvents() {
+    if (flashcardButtonsContainer) {
+        flashcardButtonsContainer.addEventListener('click', (e) => e.stopPropagation());
+        flashcardButtonsContainer.addEventListener('touchstart', (e) => e.stopPropagation());
+        flashcardButtonsContainer.addEventListener('touchend', (e) => e.stopPropagation());
+    }
 }
 
-criticalButton.addEventListener('touchstart', (e) => {
-    e.stopPropagation();
-});
+if (criticalButton) {
+    criticalButton.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+    });
+}
 
 criticalButton.addEventListener('touchend', async (e) => {
     e.stopPropagation();
@@ -724,9 +781,32 @@ answerText.addEventListener('click', (e) => {
 });
 
 // Initialize when DOM is ready
+function startApp() {
+    console.log('Starting app initialization...');
+    console.log('DOM ready state:', document.readyState);
+    
+    // Double-check DOM elements are available
+    if (!questionText || !answerText) {
+        console.error('DOM elements not available yet. questionText:', questionText, 'answerText:', answerText);
+        setTimeout(startApp, 50);
+        return;
+    }
+    
+    // Setup button container events
+    setupButtonContainerEvents();
+    
+    console.log('DOM elements found, loading flashcards...');
+    loadFlashcards().catch(error => {
+        console.error('Failed to load flashcards:', error);
+    });
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadFlashcards);
+    console.log('DOM is loading, waiting for DOMContentLoaded...');
+    document.addEventListener('DOMContentLoaded', startApp);
 } else {
-    loadFlashcards();
+    console.log('DOM already loaded, starting app...');
+    // DOM already loaded, but wait a tick to ensure everything is ready
+    setTimeout(startApp, 0);
 }
 
