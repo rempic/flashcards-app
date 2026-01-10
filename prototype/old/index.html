@@ -32,17 +32,52 @@
             </div>
         </div>
         
-        <button class="answer-button" id="answer-button" aria-label="Show answer">Show Answer</button>
-        
-        <div class="navigation">
-            <button class="nav-button" id="prev-button" aria-label="Previous card">Previous</button>
-            <button class="nav-button" id="next-button" aria-label="Next card">Next</button>
+        <div class="flashcard-bottom">
+            <div class="card-counter">
+                <span id="card-counter">1 / 1</span>
+            </div>
+            <div class="flashcard-buttons">
+                <div class="flashcard-buttons-right">
+                    <button class="critical-button" id="critical-button" aria-label="Mark as critical">
+                    </button>
+                    <button class="notes-toggle-button" id="notes-toggle-button" aria-label="Toggle notes">
+                        <span class="notes-icon">✏️</span>
+                    </button>
+                </div>
+            </div>
         </div>
         
-        <button class="shuffle-button" id="shuffle-button" aria-label="Shuffle cards">Shuffle</button>
+        <div class="notes-section">
+            <div class="notes-content" id="notes-content" style="display: none;">
+                <textarea 
+                    class="notes-textarea" 
+                    id="notes-textarea" 
+                    placeholder="Add your notes or annotations here..."
+                    rows="4"></textarea>
+                <div class="notes-actions">
+                    <button class="notes-save-button" id="notes-save-button">Save</button>
+                    <button class="notes-clear-button" id="notes-clear-button">Clear</button>
+                </div>
+                <div class="notes-display" id="notes-display" style="display: none;">
+                    <p class="notes-label">Your Notes:</p>
+                    <p class="notes-text" id="notes-text"></p>
+                </div>
+            </div>
+        </div>
         
-        <div class="card-counter">
-            <span id="card-counter">1 / 1</span>
+        <div class="answer-navigation-wrapper">
+            <button class="nav-button" id="prev-button" aria-label="Previous card">&lt;</button>
+            <button class="answer-button" id="answer-button" aria-label="Show answer">Show Answer</button>
+            <button class="nav-button" id="next-button" aria-label="Next card">&gt;</button>
+        </div>
+        
+        <div class="filter-section">
+            <select class="filter-select" id="filter-select" aria-label="Filter flashcards">
+                <option value="all">All Questions</option>
+                <option value="critical">Only Red</option>
+                <option value="non-critical">Only Green</option>
+            </select>
+            <button class="shuffle-button" id="shuffle-button" aria-label="Shuffle cards">Shuffle</button>
         </div>
     </div>
     
