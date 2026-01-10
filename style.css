@@ -36,13 +36,19 @@ body {
     position: relative;
 }
 
-.flashcard-buttons {
+.flashcard-bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
     max-width: 400px;
     margin-top: 10px;
+}
+
+.flashcard-buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .flashcard-buttons-right {
