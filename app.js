@@ -51,13 +51,24 @@ async function loadFlashcards() {
         let response;
         
         try {
+            // Try relative path first
             response = await fetch(`questions-answers.json?v=${cacheBuster}`, {
-                cache: 'no-store'
+                cache: 'no-store',
+                mode: 'cors'
             });
         } catch (fetchError) {
-            // If fetch fails (likely CORS issue with file://), try alternative approach
-            console.warn('Fetch failed, trying alternative method:', fetchError);
-            throw new Error('Cannot load flashcards. Please use a local web server (e.g., python3 -m http.server 8000) instead of opening the file directly.');
+            // If fetch fails, try with absolute path or different approach
+            console.warn('Fetch failed with relative path, error:', fetchError);
+            try {
+                // Try with ./ prefix for mobile
+                response = await fetch(`./questions-answers.json?v=${cacheBuster}`, {
+                    cache: 'no-store',
+                    mode: 'cors'
+                });
+            } catch (secondError) {
+                console.error('Both fetch attempts failed:', secondError);
+                throw new Error('Cannot load flashcards. Please ensure you are using a web server (e.g., python3 -m http.server 8000) and accessing via http://localhost:8000');
+            }
         }
         
         if (!response.ok) {
@@ -784,11 +795,14 @@ answerText.addEventListener('click', (e) => {
 function startApp() {
     console.log('Starting app initialization...');
     console.log('DOM ready state:', document.readyState);
+    console.log('User agent:', navigator.userAgent);
     
     // Double-check DOM elements are available
     if (!questionText || !answerText) {
         console.error('DOM elements not available yet. questionText:', questionText, 'answerText:', answerText);
-        setTimeout(startApp, 50);
+        // Retry with longer delay for mobile
+        const delay = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 200 : 50;
+        setTimeout(startApp, delay);
         return;
     }
     
@@ -798,15 +812,38 @@ function startApp() {
     console.log('DOM elements found, loading flashcards...');
     loadFlashcards().catch(error => {
         console.error('Failed to load flashcards:', error);
+        // Show error on screen for mobile debugging
+        if (questionText) {
+            questionText.innerHTML = `Error: ${error.message || 'Failed to load'}`;
+        }
+        if (answerText) {
+            answerText.innerHTML = 'Check console for details';
+        }
     });
 }
+
+// Mobile browsers sometimes need different initialization
+const isMobile = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent);
+console.log('Is mobile device:', isMobile);
 
 if (document.readyState === 'loading') {
     console.log('DOM is loading, waiting for DOMContentLoaded...');
     document.addEventListener('DOMContentLoaded', startApp);
+    // Also try on window load as backup for mobile
+    if (isMobile) {
+        window.addEventListener('load', () => {
+            console.log('Window load event fired');
+            if (flashcards.length === 0) {
+                console.log('Flashcards not loaded yet, retrying...');
+                setTimeout(startApp, 100);
+            }
+        });
+    }
 } else {
     console.log('DOM already loaded, starting app...');
     // DOM already loaded, but wait a tick to ensure everything is ready
-    setTimeout(startApp, 0);
+    // Use longer delay for mobile
+    const delay = isMobile ? 100 : 0;
+    setTimeout(startApp, delay);
 }
 
