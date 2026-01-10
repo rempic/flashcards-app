@@ -533,7 +533,30 @@ function updateFilterSelect() {
 }
 
 // Event listeners
-flashcard.addEventListener('click', flipCard);
+function shouldFlipCard(e) {
+    // Don't flip if clicking/touching on buttons or button containers
+    if (e.target.closest('.flashcard-buttons') || 
+        e.target.closest('button') || 
+        e.target.closest('.answer-navigation-wrapper') ||
+        e.target.closest('.filter-section')) {
+        return false;
+    }
+    return true;
+}
+
+flashcard.addEventListener('click', (e) => {
+    if (shouldFlipCard(e)) {
+        flipCard();
+    }
+});
+
+// Handle touch events for mobile
+flashcard.addEventListener('touchend', (e) => {
+    if (shouldFlipCard(e)) {
+        e.preventDefault();
+        flipCard();
+    }
+});
 answerButton.addEventListener('click', showAnswer);
 prevButton.addEventListener('click', goToPrevious);
 nextButton.addEventListener('click', goToNext);
@@ -544,16 +567,28 @@ notesToggleButton.addEventListener('click', toggleNotesSection);
 notesSaveButton.addEventListener('click', saveCurrentNote);
 notesClearButton.addEventListener('click', clearCurrentNote);
 
-// Critical event listeners
-criticalButton.addEventListener('click', async (e) => {
+// Critical event listeners - handle both click and touch events
+let criticalButtonTouchHandled = false;
+criticalButton.addEventListener('touchstart', (e) => {
     e.stopPropagation();
-    e.preventDefault();
-    await toggleCritical();
 });
 criticalButton.addEventListener('touchend', async (e) => {
     e.stopPropagation();
     e.preventDefault();
+    criticalButtonTouchHandled = true;
     await toggleCritical();
+    // Reset after a short delay to allow click event to be ignored
+    setTimeout(() => {
+        criticalButtonTouchHandled = false;
+    }, 300);
+});
+criticalButton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // Ignore click if it was already handled by touch event (mobile)
+    if (!criticalButtonTouchHandled) {
+        await toggleCritical();
+    }
 });
 
 // Filter event listeners
