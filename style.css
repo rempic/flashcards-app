@@ -538,7 +538,7 @@ body {
 }
 
 /* Mobile responsive styles */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     body {
         padding: 10px;
     }
@@ -565,6 +565,7 @@ body {
     
     .card-text {
         font-size: 22px !important;
+        line-height: 1.6 !important;
     }
     
     .flashcard-bottom {
@@ -632,7 +633,7 @@ body {
     }
 }
 
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
     body {
         padding: 8px;
     }
