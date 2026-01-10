@@ -545,7 +545,16 @@ notesSaveButton.addEventListener('click', saveCurrentNote);
 notesClearButton.addEventListener('click', clearCurrentNote);
 
 // Critical event listeners
-criticalButton.addEventListener('click', toggleCritical);
+criticalButton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    await toggleCritical();
+});
+criticalButton.addEventListener('touchend', async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    await toggleCritical();
+});
 
 // Filter event listeners
 filterSelect.addEventListener('change', (e) => {
@@ -561,7 +570,6 @@ notesToggleButton.addEventListener('click', (e) => e.stopPropagation());
 notesSaveButton.addEventListener('click', (e) => e.stopPropagation());
 notesClearButton.addEventListener('click', (e) => e.stopPropagation());
 notesTextarea.addEventListener('click', (e) => e.stopPropagation());
-criticalButton.addEventListener('click', (e) => e.stopPropagation());
 filterSelect.addEventListener('click', (e) => e.stopPropagation());
 
 // Prevent card flip when clicking links inside cards
