@@ -78,16 +78,32 @@
         </div>
     </div>
     
-    <script src="app.js"></script>
     <script>
-        // Fallback: If script didn't load, show error
+        // Set a flag to indicate script is loading
+        window.appScriptLoading = true;
+        
+        // Fallback: Check if script loaded after 4 seconds
         setTimeout(function() {
             const questionEl = document.getElementById('question-text');
-            if (questionEl && questionEl.innerHTML === 'Loading...') {
-                questionEl.innerHTML = 'Script may not have loaded. Check console.';
+            // Only show error if text is still "Loading..." (script didn't update it)
+            // and script didn't load or initialize
+            if (questionEl && 
+                questionEl.innerHTML === 'Loading...' && 
+                (!window.appScriptLoaded || window.appScriptError || !window.appInitializing)) {
+                questionEl.innerHTML = 'Script may not have loaded. Check console and network.';
                 questionEl.style.color = 'red';
+                console.error('App script may not have loaded. Check network tab for app.js');
+                console.error('appScriptLoaded:', window.appScriptLoaded);
+                console.error('appScriptError:', window.appScriptError);
+                console.error('appInitializing:', window.appInitializing);
             }
-        }, 3000);
+        }, 4000);
+    </script>
+    <script src="app.js" onerror="window.appScriptError = true; console.error('Failed to load app.js');"></script>
+    <script>
+        // Mark script as loaded (this runs after app.js executes)
+        window.appScriptLoading = false;
+        window.appScriptLoaded = true;
     </script>
 </body>
 </html>

@@ -8,6 +8,12 @@ console.log('✓ app.js script loaded');
 console.log('Current URL:', window.location.href);
 console.log('Protocol:', window.location.protocol);
 
+// Mark script as loaded
+if (typeof window !== 'undefined') {
+    window.appScriptLoaded = true;
+    window.appScriptLoading = false;
+}
+
 // App state
 let currentCardIndex = 0;
 let isFlipped = false;
@@ -65,12 +71,14 @@ async function loadFlashcards() {
         return;
     }
     
-    // Show loading state
+    // Show loading state - this updates the text so fallback doesn't trigger
     if (questionText) {
         questionText.innerHTML = 'Loading flashcards...';
+        questionText.style.color = '';
     }
     if (answerText) {
         answerText.innerHTML = 'Please wait...';
+        answerText.style.color = '';
     }
     
     try {
@@ -877,6 +885,11 @@ function startApp() {
     console.log('DOM ready state:', document.readyState);
     console.log('User agent:', navigator.userAgent);
     
+    // Mark that app is initializing (prevents fallback message)
+    if (typeof window !== 'undefined') {
+        window.appInitializing = true;
+    }
+    
     // Initialize DOM elements first
     if (!initDOMElements()) {
         console.error('Failed to initialize DOM elements. Retrying...');
@@ -886,6 +899,12 @@ function startApp() {
     }
     
     console.log('✓ DOM elements initialized');
+    
+    // Update loading text immediately to prevent fallback message
+    if (questionText) {
+        questionText.innerHTML = 'Initializing...';
+        questionText.style.color = '';
+    }
     
     // Setup button container events
     setupButtonContainerEvents();
@@ -913,24 +932,69 @@ function startApp() {
 const isMobile = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent);
 console.log('Is mobile device:', isMobile);
 
-if (document.readyState === 'loading') {
-    console.log('DOM is loading, waiting for DOMContentLoaded...');
-    document.addEventListener('DOMContentLoaded', startApp);
-    // Also try on window load as backup for mobile
-    if (isMobile) {
-        window.addEventListener('load', () => {
-            console.log('Window load event fired');
-            if (flashcards.length === 0) {
-                console.log('Flashcards not loaded yet, retrying...');
-                setTimeout(startApp, 100);
+// Wrap initialization in try-catch to catch any errors
+try {
+    if (document.readyState === 'loading') {
+        console.log('DOM is loading, waiting for DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                startApp();
+            } catch (error) {
+                console.error('Error in startApp (DOMContentLoaded):', error);
+                showError('Initialization error: ' + error.message);
             }
         });
+        // Also try on window load as backup for mobile
+        if (isMobile) {
+            window.addEventListener('load', () => {
+                console.log('Window load event fired');
+                try {
+                    if (flashcards.length === 0) {
+                        console.log('Flashcards not loaded yet, retrying...');
+                        setTimeout(() => {
+                            try {
+                                startApp();
+                            } catch (error) {
+                                console.error('Error in startApp (window load):', error);
+                                showError('Initialization error: ' + error.message);
+                            }
+                        }, 100);
+                    }
+                } catch (error) {
+                    console.error('Error in window load handler:', error);
+                }
+            });
+        }
+    } else {
+        console.log('DOM already loaded, starting app...');
+        // DOM already loaded, but wait a tick to ensure everything is ready
+        // Use longer delay for mobile
+        const delay = isMobile ? 100 : 0;
+        setTimeout(() => {
+            try {
+                startApp();
+            } catch (error) {
+                console.error('Error in startApp (immediate):', error);
+                showError('Initialization error: ' + error.message);
+            }
+        }, delay);
     }
-} else {
-    console.log('DOM already loaded, starting app...');
-    // DOM already loaded, but wait a tick to ensure everything is ready
-    // Use longer delay for mobile
-    const delay = isMobile ? 100 : 0;
-    setTimeout(startApp, delay);
+} catch (error) {
+    console.error('Fatal error during initialization:', error);
+    showError('Fatal error: ' + error.message);
+}
+
+// Helper function to show errors on screen
+function showError(message) {
+    const questionEl = document.getElementById('question-text');
+    const answerEl = document.getElementById('answer-text');
+    if (questionEl) {
+        questionEl.innerHTML = message;
+        questionEl.style.color = 'red';
+    }
+    if (answerEl) {
+        answerEl.innerHTML = 'Please check the console for details';
+        answerEl.style.color = 'red';
+    }
 }
 
