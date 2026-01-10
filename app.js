@@ -15,31 +15,46 @@ let notesExpanded = false;
 let currentFilter = 'all'; // 'all', 'critical', 'non-critical'
 let isTogglingCritical = false; // Flag to prevent re-entrancy in toggleCritical
 
-// DOM elements
-const flashcard = document.getElementById('flashcard');
-const questionText = document.getElementById('question-text');
-const answerText = document.getElementById('answer-text');
-const answerButton = document.getElementById('answer-button');
-const prevButton = document.getElementById('prev-button');
-const nextButton = document.getElementById('next-button');
-const shuffleButton = document.getElementById('shuffle-button');
-const cardCounter = document.getElementById('card-counter');
+// DOM elements - will be initialized after DOM is ready
+let flashcard, questionText, answerText, answerButton, prevButton, nextButton;
+let shuffleButton, cardCounter, notesToggleButton, notesContent;
+let notesTextarea, notesSaveButton, notesClearButton, notesDisplay, notesText;
+let criticalButton, filterSelect, flashcardButtonsContainer;
 
-// Notes DOM elements
-const notesToggleButton = document.getElementById('notes-toggle-button');
-const notesContent = document.getElementById('notes-content');
-const notesTextarea = document.getElementById('notes-textarea');
-const notesSaveButton = document.getElementById('notes-save-button');
-const notesClearButton = document.getElementById('notes-clear-button');
-const notesDisplay = document.getElementById('notes-display');
-const notesText = document.getElementById('notes-text');
-
-// Critical DOM elements
-const criticalButton = document.getElementById('critical-button');
-
-// Filter DOM elements
-const filterSelect = document.getElementById('filter-select');
-const flashcardButtonsContainer = document.querySelector('.flashcard-buttons');
+// Initialize DOM elements
+function initDOMElements() {
+    flashcard = document.getElementById('flashcard');
+    questionText = document.getElementById('question-text');
+    answerText = document.getElementById('answer-text');
+    answerButton = document.getElementById('answer-button');
+    prevButton = document.getElementById('prev-button');
+    nextButton = document.getElementById('next-button');
+    shuffleButton = document.getElementById('shuffle-button');
+    cardCounter = document.getElementById('card-counter');
+    
+    // Notes DOM elements
+    notesToggleButton = document.getElementById('notes-toggle-button');
+    notesContent = document.getElementById('notes-content');
+    notesTextarea = document.getElementById('notes-textarea');
+    notesSaveButton = document.getElementById('notes-save-button');
+    notesClearButton = document.getElementById('notes-clear-button');
+    notesDisplay = document.getElementById('notes-display');
+    notesText = document.getElementById('notes-text');
+    
+    // Critical DOM elements
+    criticalButton = document.getElementById('critical-button');
+    
+    // Filter DOM elements
+    filterSelect = document.getElementById('filter-select');
+    flashcardButtonsContainer = document.querySelector('.flashcard-buttons');
+    
+    // Verify critical elements
+    if (!questionText || !answerText) {
+        console.error('Critical DOM elements not found!');
+        return false;
+    }
+    return true;
+}
 
 // Load flashcards from JSON file
 async function loadFlashcards() {
@@ -741,29 +756,6 @@ function shouldFlipCard(e) {
     return true;
 }
 
-flashcard.addEventListener('click', (e) => {
-    if (shouldFlipCard(e)) {
-        flipCard();
-    }
-});
-
-// Handle touch events for mobile
-flashcard.addEventListener('touchend', (e) => {
-    if (shouldFlipCard(e)) {
-        e.preventDefault();
-        flipCard();
-    }
-});
-answerButton.addEventListener('click', showAnswer);
-prevButton.addEventListener('click', goToPrevious);
-nextButton.addEventListener('click', goToNext);
-shuffleButton.addEventListener('click', shuffleFlashcards);
-
-// Notes event listeners
-notesToggleButton.addEventListener('click', toggleNotesSection);
-notesSaveButton.addEventListener('click', saveCurrentNote);
-notesClearButton.addEventListener('click', clearCurrentNote);
-
 // Critical event listeners - handle both click and touch events
 let criticalButtonTouchHandled = false;
 // isTogglingCritical is declared at the top level to prevent re-entrancy
@@ -778,59 +770,106 @@ function setupButtonContainerEvents() {
     }
 }
 
-if (criticalButton) {
-    criticalButton.addEventListener('touchstart', (e) => {
-        e.stopPropagation();
+// Setup all event listeners - called after DOM is ready
+function setupEventListeners() {
+    if (!flashcard || !answerButton || !prevButton || !nextButton || !shuffleButton) {
+        console.error('Cannot setup event listeners - DOM elements not ready');
+        return;
+    }
+    
+    // Flashcard flip events
+    flashcard.addEventListener('click', (e) => {
+        if (shouldFlipCard(e)) {
+            flipCard();
+        }
     });
+
+    // Handle touch events for mobile
+    flashcard.addEventListener('touchend', (e) => {
+        if (shouldFlipCard(e)) {
+            e.preventDefault();
+            flipCard();
+        }
+    });
+    
+    // Navigation buttons
+    answerButton.addEventListener('click', showAnswer);
+    prevButton.addEventListener('click', goToPrevious);
+    nextButton.addEventListener('click', goToNext);
+    shuffleButton.addEventListener('click', shuffleFlashcards);
+
+    // Notes event listeners
+    if (notesToggleButton) {
+        notesToggleButton.addEventListener('click', toggleNotesSection);
+    }
+    if (notesSaveButton) {
+        notesSaveButton.addEventListener('click', saveCurrentNote);
+    }
+    if (notesClearButton) {
+        notesClearButton.addEventListener('click', clearCurrentNote);
+    }
+
+    // Critical button events
+    if (criticalButton) {
+        criticalButton.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        });
+
+        criticalButton.addEventListener('touchend', async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            criticalButtonTouchHandled = true;
+            await toggleCritical();
+            // Reset after a short delay to allow click event to be ignored
+            setTimeout(() => {
+                criticalButtonTouchHandled = false;
+            }, 300);
+        });
+
+        criticalButton.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            // Ignore click if it was already handled by touch event (mobile)
+            if (!criticalButtonTouchHandled) {
+                await toggleCritical();
+            }
+        });
+    }
+
+    // Filter event listeners
+    if (filterSelect) {
+        filterSelect.addEventListener('change', (e) => {
+            applyFilter(e.target.value);
+        });
+    }
+
+    // Prevent card flip when clicking buttons (event bubbling)
+    answerButton.addEventListener('click', (e) => e.stopPropagation());
+    prevButton.addEventListener('click', (e) => e.stopPropagation());
+    nextButton.addEventListener('click', (e) => e.stopPropagation());
+    shuffleButton.addEventListener('click', (e) => e.stopPropagation());
+    if (notesToggleButton) notesToggleButton.addEventListener('click', (e) => e.stopPropagation());
+    if (notesSaveButton) notesSaveButton.addEventListener('click', (e) => e.stopPropagation());
+    if (notesClearButton) notesClearButton.addEventListener('click', (e) => e.stopPropagation());
+    if (notesTextarea) notesTextarea.addEventListener('click', (e) => e.stopPropagation());
+    if (filterSelect) filterSelect.addEventListener('click', (e) => e.stopPropagation());
+
+    // Prevent card flip when clicking links inside cards
+    if (questionText) {
+        questionText.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                e.stopPropagation();
+            }
+        });
+    }
+    if (answerText) {
+        answerText.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                e.stopPropagation();
+            }
+        });
+    }
 }
-
-criticalButton.addEventListener('touchend', async (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    criticalButtonTouchHandled = true;
-    await toggleCritical();
-    // Reset after a short delay to allow click event to be ignored
-    setTimeout(() => {
-        criticalButtonTouchHandled = false;
-    }, 300);
-});
-
-criticalButton.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    // Ignore click if it was already handled by touch event (mobile)
-    if (!criticalButtonTouchHandled) {
-        await toggleCritical();
-    }
-});
-
-// Filter event listeners
-filterSelect.addEventListener('change', (e) => {
-    applyFilter(e.target.value);
-});
-
-// Prevent card flip when clicking buttons (event bubbling)
-answerButton.addEventListener('click', (e) => e.stopPropagation());
-prevButton.addEventListener('click', (e) => e.stopPropagation());
-nextButton.addEventListener('click', (e) => e.stopPropagation());
-shuffleButton.addEventListener('click', (e) => e.stopPropagation());
-notesToggleButton.addEventListener('click', (e) => e.stopPropagation());
-notesSaveButton.addEventListener('click', (e) => e.stopPropagation());
-notesClearButton.addEventListener('click', (e) => e.stopPropagation());
-notesTextarea.addEventListener('click', (e) => e.stopPropagation());
-filterSelect.addEventListener('click', (e) => e.stopPropagation());
-
-// Prevent card flip when clicking links inside cards
-questionText.addEventListener('click', (e) => {
-    if (e.target.tagName === 'A') {
-        e.stopPropagation();
-    }
-});
-answerText.addEventListener('click', (e) => {
-    if (e.target.tagName === 'A') {
-        e.stopPropagation();
-    }
-});
 
 // Initialize when DOM is ready
 function startApp() {
@@ -838,27 +877,34 @@ function startApp() {
     console.log('DOM ready state:', document.readyState);
     console.log('User agent:', navigator.userAgent);
     
-    // Double-check DOM elements are available
-    if (!questionText || !answerText) {
-        console.error('DOM elements not available yet. questionText:', questionText, 'answerText:', answerText);
-        // Retry with longer delay for mobile
-        const delay = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 200 : 50;
+    // Initialize DOM elements first
+    if (!initDOMElements()) {
+        console.error('Failed to initialize DOM elements. Retrying...');
+        const delay = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 300 : 100;
         setTimeout(startApp, delay);
         return;
     }
     
+    console.log('✓ DOM elements initialized');
+    
     // Setup button container events
     setupButtonContainerEvents();
     
-    console.log('DOM elements found, loading flashcards...');
+    // Setup all event listeners
+    setupEventListeners();
+    
+    console.log('✓ Event listeners setup complete');
+    console.log('Loading flashcards...');
     loadFlashcards().catch(error => {
         console.error('Failed to load flashcards:', error);
         // Show error on screen for mobile debugging
         if (questionText) {
             questionText.innerHTML = `Error: ${error.message || 'Failed to load'}`;
+            questionText.style.color = 'red';
         }
         if (answerText) {
             answerText.innerHTML = 'Check console for details';
+            answerText.style.color = 'red';
         }
     });
 }
