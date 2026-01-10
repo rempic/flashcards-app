@@ -76,6 +76,7 @@ async function init() {
     updateCounter();
     updateAnswerButton();
     updateFilterSelect();
+    await updateCriticalFilterOption();
 }
 
 // Convert URLs in text to clickable links
@@ -511,6 +512,9 @@ async function toggleCritical() {
             }
         }
         
+        // Update filter option availability after toggling
+        await updateCriticalFilterOption();
+        
         // Don't re-apply filter - keep the current card visible
         // Don't call renderCard - it will reset the card to question side
     } catch (error) {
@@ -572,10 +576,52 @@ async function applyFilter(filterType) {
     updateNavigationButtons();
     updateCounter();
     updateFilterSelect();
+    await updateCriticalFilterOption();
+}
+
+async function hasCriticalCards() {
+    try {
+        const db = await openDB();
+        const transaction = db.transaction([CRITICAL_STORE_NAME], 'readonly');
+        const store = transaction.objectStore(CRITICAL_STORE_NAME);
+        const request = store.count();
+        
+        return new Promise((resolve, reject) => {
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+                resolve(request.result > 0);
+            };
+        });
+    } catch (error) {
+        console.error('Error checking critical cards:', error);
+        return false;
+    }
 }
 
 function updateFilterSelect() {
     filterSelect.value = currentFilter;
+}
+
+async function updateCriticalFilterOption() {
+    const hasCritical = await hasCriticalCards();
+    const criticalOption = filterSelect.querySelector('option[value="critical"]');
+    
+    if (criticalOption) {
+        if (!hasCritical) {
+            // Disable the option if there are no critical cards
+            criticalOption.disabled = true;
+            
+            // If currently on "Only Red" filter and there are no red cards, switch to "All Questions"
+            if (currentFilter === 'critical') {
+                currentFilter = 'all';
+                filterSelect.value = 'all';
+                await applyFilter('all');
+            }
+        } else {
+            // Enable the option if there are critical cards
+            criticalOption.disabled = false;
+        }
+    }
 }
 
 // Event listeners
