@@ -646,13 +646,8 @@ body {
     }
     
     .card-text {
-        font-size: 28px !important;
+        font-size: 24px !important;
         line-height: 1.6;
-    }
-    
-    /* Smaller font when showing only Red (critical) questions */
-    body.filter-critical-active .card-text {
-        font-size: 23px !important;
     }
     
     .card-label {
