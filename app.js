@@ -117,12 +117,26 @@ async function loadFlashcards(jsonFileName = null) {
             console.log('Fetch response status:', response.status);
         } catch (fetchError) {
             console.error('Fetch error:', fetchError);
-            // Show error immediately
+            // Show user-friendly error message
+            const isNetworkError = fetchError.message.includes('Failed to fetch') || 
+                                   fetchError.message.includes('NetworkError') ||
+                                   fetchError.message.includes('Network request failed');
+            
             if (questionText) {
-                questionText.innerHTML = `Fetch Error: ${fetchError.message}`;
+                if (isNetworkError) {
+                    questionText.innerHTML = 'Network Error: Unable to load flashcards.<br><br>Please check:<br>• Your internet connection<br>• The server is running<br>• You\'re accessing the correct URL';
+                } else {
+                    questionText.innerHTML = `Error: ${fetchError.message}`;
+                }
+                questionText.style.color = 'red';
             }
             if (answerText) {
-                answerText.innerHTML = 'Check console and ensure server is running';
+                if (isNetworkError) {
+                    answerText.innerHTML = 'On mobile, ensure you\'re using the correct IP address and port (e.g., http://192.168.1.x:8000)';
+                } else {
+                    answerText.innerHTML = 'Check console and ensure server is running';
+                }
+                answerText.style.color = 'red';
             }
             throw fetchError;
         }
@@ -130,11 +144,26 @@ async function loadFlashcards(jsonFileName = null) {
         if (!response.ok) {
             const errorMsg = `HTTP ${response.status}: ${response.statusText}`;
             console.error('Response not OK:', errorMsg);
+            console.error('Requested URL:', jsonUrl);
+            console.error('Response status:', response.status);
+            
             if (questionText) {
-                questionText.innerHTML = `Error: ${errorMsg}`;
+                let userMessage = `Error ${response.status}: `;
+                if (response.status === 404) {
+                    userMessage += `File not found: ${jsonFileName}`;
+                } else if (response.status === 403) {
+                    userMessage += 'Access forbidden. Check server permissions.';
+                } else if (response.status >= 500) {
+                    userMessage += 'Server error. Please try again later.';
+                } else {
+                    userMessage += response.statusText;
+                }
+                questionText.innerHTML = userMessage;
+                questionText.style.color = 'red';
             }
             if (answerText) {
-                answerText.innerHTML = `Make sure ${jsonFileName} exists`;
+                answerText.innerHTML = `Make sure ${jsonFileName} exists and the server is running correctly.`;
+                answerText.style.color = 'red';
             }
             throw new Error(errorMsg);
         }
@@ -178,13 +207,31 @@ async function loadFlashcards(jsonFileName = null) {
         await init();
     } catch (error) {
         console.error('Error loading flashcards:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            url: window.location.href,
+            userAgent: navigator.userAgent
+        });
+        
         const errorMsg = error.message || 'Unknown error';
         if (questionText) {
             questionText.innerHTML = `Error: ${errorMsg}`;
             questionText.style.color = 'red';
         }
         if (answerText) {
-            answerText.innerHTML = `URL: ${window.location.href}<br>Use: python3 -m http.server 8000`;
+            const currentUrl = window.location.href;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            let helpText = `URL: ${currentUrl}<br><br>`;
+            if (isMobile) {
+                helpText += 'Mobile Access Tips:<br>';
+                helpText += '• Use your computer\'s IP address (not localhost)<br>';
+                helpText += '• Ensure mobile and computer are on same network<br>';
+                helpText += '• Example: http://192.168.1.100:8000<br><br>';
+            }
+            helpText += 'Start server: python3 -m http.server 8000';
+            answerText.innerHTML = helpText;
             answerText.style.color = 'red';
         }
     }
