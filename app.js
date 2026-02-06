@@ -757,6 +757,13 @@ async function toggleCritical() {
 async function applyFilter(filterType) {
     currentFilter = filterType;
     
+    // Add/remove class to body for CSS targeting
+    if (filterType === 'critical') {
+        document.body.classList.add('filter-critical-active');
+    } else {
+        document.body.classList.remove('filter-critical-active');
+    }
+    
     // Save current note before filtering
     await saveCurrentNote();
     
@@ -825,6 +832,14 @@ async function hasCriticalCards() {
 
 function updateFilterSelect() {
     filterSelect.value = currentFilter;
+    
+    // Update body class for CSS targeting
+    if (currentFilter === 'critical') {
+        document.body.classList.add('filter-critical-active');
+    } else {
+        document.body.classList.remove('filter-critical-active');
+    }
+    
     updateFilterCounts();
 }
 

@@ -5,11 +5,21 @@
     box-sizing: border-box;
 }
 
+html {
+    height: 100%;
+    height: -webkit-fill-available; /* For mobile browsers */
+    background: #667eea;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #667eea;
     min-height: 100vh;
     min-height: -webkit-fill-available; /* For mobile browsers */
+    height: 100vh;
+    height: -webkit-fill-available; /* For mobile browsers */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -19,6 +29,7 @@ body {
     -webkit-user-select: none;
     user-select: none;
     overflow-x: hidden;
+    margin: 0;
 }
 
 .app-container {
@@ -610,12 +621,12 @@ body {
 /* Mobile responsive styles */
 @media screen and (max-width: 768px) {
     body {
-        padding: 15px 10px;
+        padding: 20px 15px;
     }
     
     .app-container {
         gap: 20px;
-        padding: 0 5px;
+        padding: 0 10px;
     }
     
     .flashcard {
@@ -637,6 +648,11 @@ body {
     .card-text {
         font-size: 28px !important;
         line-height: 1.6;
+    }
+    
+    /* Smaller font when showing only Red (critical) questions */
+    body.filter-critical-active .card-text {
+        font-size: 23px !important;
     }
     
     .card-label {
@@ -704,12 +720,12 @@ body {
 
 @media screen and (max-width: 480px) {
     body {
-        padding: 10px 5px;
+        padding: 15px 10px;
     }
     
     .app-container {
         gap: 15px;
-        padding: 0;
+        padding: 0 8px;
     }
     
     .flashcard {
@@ -732,6 +748,11 @@ body {
     .card-text {
         font-size: 28px !important;
         line-height: 1.5;
+    }
+    
+    /* Smaller font when showing only Red (critical) questions */
+    body.filter-critical-active .card-text {
+        font-size: 23px !important;
     }
     
     .card-label {
