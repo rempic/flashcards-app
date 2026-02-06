@@ -13,6 +13,13 @@
 </head>
 <body>
     <div class="app-container">
+        <div class="question-set-section">
+            <select class="question-set-select" id="question-set-select" aria-label="Select question set">
+                <option value="questions-answers-128.json">128 questions (filing after 10/20/2025)</option>
+                <option value="questions-answers-100.json">100 questions (filing before 10/20/2025)</option>
+            </select>
+        </div>
+        
         <div class="flashcard-container">
             <div class="flashcard" id="flashcard">
                 <div class="flashcard-inner">
@@ -20,6 +27,7 @@
                         <div class="card-content">
                             <p class="card-label">Question</p>
                             <p class="card-text" id="question-text">Loading...</p>
+                            <p class="note-indicator" id="note-indicator" style="display: none;">note available</p>
                         </div>
                     </div>
                     <div class="flashcard-back">
@@ -67,9 +75,9 @@
         
         <div class="filter-section">
             <select class="filter-select" id="filter-select" aria-label="Filter flashcards">
-                <option value="all" id="filter-all">All Questions</option>
-                <option value="critical" id="filter-critical">Only Red</option>
-                <option value="non-critical" id="filter-non-critical">Only Green</option>
+                <option value="all" id="filter-all">All Questions </option>
+                <option value="critical" id="filter-critical">Red Labeled Questions </option>
+                <option value="non-critical" id="filter-non-critical">Green Labeled Questions </option>
             </select>
             <button class="shuffle-button" id="shuffle-button" aria-label="Shuffle cards">Shuffle</button>
         </div>

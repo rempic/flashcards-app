@@ -25,7 +25,7 @@ let isTogglingCritical = false; // Flag to prevent re-entrancy in toggleCritical
 let flashcard, questionText, answerText, answerButton, prevButton, nextButton;
 let shuffleButton, cardCounter, notesToggleButton, notesContent;
 let notesTextarea, notesSaveButton, notesClearButton, notesDisplay, notesText;
-let criticalButton, filterSelect, flashcardButtonsContainer;
+let criticalButton, filterSelect, flashcardButtonsContainer, questionSetSelect, noteIndicator;
 
 // Initialize DOM elements
 function initDOMElements() {
@@ -54,6 +54,12 @@ function initDOMElements() {
     filterSelect = document.getElementById('filter-select');
     flashcardButtonsContainer = document.querySelector('.flashcard-buttons');
     
+    // Question set selector
+    questionSetSelect = document.getElementById('question-set-select');
+    
+    // Note indicator
+    noteIndicator = document.getElementById('note-indicator');
+    
     // Verify critical elements
     if (!questionText || !answerText) {
         console.error('Critical DOM elements not found!');
@@ -63,12 +69,25 @@ function initDOMElements() {
 }
 
 // Load flashcards from JSON file
-async function loadFlashcards() {
+async function loadFlashcards(jsonFileName = null) {
     // Ensure DOM elements are available
     if (!questionText || !answerText) {
         console.error('DOM elements not found. Retrying...');
-        setTimeout(loadFlashcards, 100);
+        setTimeout(() => loadFlashcards(jsonFileName), 100);
         return;
+    }
+    
+    // Get the JSON file name from parameter, localStorage, or default
+    if (!jsonFileName) {
+        jsonFileName = localStorage.getItem('selectedQuestionSet') || 'questions-answers-128.json';
+    }
+    
+    // Save the selection to localStorage
+    localStorage.setItem('selectedQuestionSet', jsonFileName);
+    
+    // Update the selector if it exists
+    if (questionSetSelect) {
+        questionSetSelect.value = jsonFileName;
     }
     
     // Show loading state - this updates the text so fallback doesn't trigger
@@ -84,7 +103,7 @@ async function loadFlashcards() {
     try {
         // Add cache-busting parameter to ensure latest version is loaded
         const cacheBuster = new Date().getTime();
-        const jsonUrl = `questions-answers.json?v=${cacheBuster}`;
+        const jsonUrl = `${jsonFileName}?v=${cacheBuster}`;
         
         console.log('Attempting to fetch:', jsonUrl);
         console.log('Current URL:', window.location.href);
@@ -115,7 +134,7 @@ async function loadFlashcards() {
                 questionText.innerHTML = `Error: ${errorMsg}`;
             }
             if (answerText) {
-                answerText.innerHTML = 'Make sure questions-answers.json exists';
+                answerText.innerHTML = `Make sure ${jsonFileName} exists`;
             }
             throw new Error(errorMsg);
         }
@@ -362,6 +381,11 @@ const DB_VERSION = 2; // Incremented to add critical store
 const STORE_NAME = 'notes';
 const CRITICAL_STORE_NAME = 'critical';
 
+// Ensure card ID is always a string (for compatibility with prefixed IDs like "100-1", "128-1")
+function normalizeCardId(cardId) {
+    return String(cardId || '');
+}
+
 // Open IndexedDB database
 function openDB() {
     return new Promise((resolve, reject) => {
@@ -455,16 +479,25 @@ async function loadNotesForCurrentCard() {
     if (!card || !card.id) return;
     
     try {
-        const savedNote = await getNote(card.id);
+        const cardId = normalizeCardId(card.id);
+        const savedNote = await getNote(cardId);
         
         if (savedNote) {
             notesTextarea.value = savedNote;
             notesText.textContent = savedNote;
             notesDisplay.style.display = 'block';
+            // Show note indicator on question side
+            if (noteIndicator) {
+                noteIndicator.style.display = 'block';
+            }
         } else {
             notesTextarea.value = '';
             notesText.textContent = '';
             notesDisplay.style.display = 'none';
+            // Hide note indicator
+            if (noteIndicator) {
+                noteIndicator.style.display = 'none';
+            }
         }
     } catch (error) {
         console.error('Error loading note:', error);
@@ -478,14 +511,23 @@ async function saveCurrentNote() {
     const note = notesTextarea.value.trim();
     
     try {
-        await saveNote(card.id, note);
+        const cardId = normalizeCardId(card.id);
+        await saveNote(cardId, note);
         
         if (note) {
             notesText.textContent = note;
             notesDisplay.style.display = 'block';
+            // Show note indicator on question side
+            if (noteIndicator) {
+                noteIndicator.style.display = 'block';
+            }
         } else {
             notesText.textContent = '';
             notesDisplay.style.display = 'none';
+            // Hide note indicator
+            if (noteIndicator) {
+                noteIndicator.style.display = 'none';
+            }
         }
     } catch (error) {
         console.error('Error saving note:', error);
@@ -499,9 +541,14 @@ async function clearCurrentNote() {
     notesTextarea.value = '';
     
     try {
-        await deleteNote(card.id);
+        const cardId = normalizeCardId(card.id);
+        await deleteNote(cardId);
         notesText.textContent = '';
         notesDisplay.style.display = 'none';
+        // Hide note indicator
+        if (noteIndicator) {
+            noteIndicator.style.display = 'none';
+        }
     } catch (error) {
         console.error('Error clearing note:', error);
     }
@@ -575,7 +622,8 @@ async function loadCriticalState() {
     if (!card || !card.id) return;
     
     try {
-        const isCritical = await isCardCritical(card.id);
+        const cardId = normalizeCardId(card.id);
+        const isCritical = await isCardCritical(cardId);
         updateCriticalButton(isCritical);
     } catch (error) {
         console.error('Error loading critical state:', error);
@@ -604,16 +652,16 @@ async function toggleCritical() {
     }
     
     // Save the current card ID and index BEFORE any async operations
-    const currentCardId = card.id;
+    const currentCardId = normalizeCardId(card.id);
     const savedIndex = currentCardIndex;
     
     try {
-        const isCritical = await isCardCritical(card.id);
+        const isCritical = await isCardCritical(currentCardId);
         if (isCritical) {
-            await unmarkCardAsCritical(card.id);
+            await unmarkCardAsCritical(currentCardId);
             updateCriticalButton(false);
         } else {
-            await markCardAsCritical(card.id);
+            await markCardAsCritical(currentCardId);
             updateCriticalButton(true);
         }
         
@@ -629,9 +677,9 @@ async function toggleCritical() {
         
         // Double-check: verify the card at this index is still the same
         const cardAtIndex = filteredFlashcards[currentCardIndex];
-        if (!cardAtIndex || cardAtIndex.id !== currentCardId) {
+        if (!cardAtIndex || normalizeCardId(cardAtIndex.id) !== currentCardId) {
             // If card changed (shouldn't happen), find it in the list
-            const cardIndex = filteredFlashcards.findIndex(c => c.id === currentCardId);
+            const cardIndex = filteredFlashcards.findIndex(c => normalizeCardId(c.id) === currentCardId);
             if (cardIndex !== -1) {
                 currentCardIndex = cardIndex;
             } else {
@@ -688,9 +736,9 @@ async function applyFilter(filterType) {
         }
         
         if (filterType === 'critical') {
-            filteredFlashcards = allFlashcards.filter(card => criticalCardIds.has(card.id));
+            filteredFlashcards = allFlashcards.filter(card => criticalCardIds.has(normalizeCardId(card.id)));
         } else if (filterType === 'non-critical') {
-            filteredFlashcards = allFlashcards.filter(card => !criticalCardIds.has(card.id));
+            filteredFlashcards = allFlashcards.filter(card => !criticalCardIds.has(normalizeCardId(card.id)));
         }
     }
     
@@ -755,7 +803,7 @@ async function updateFilterCounts() {
     
     // Calculate counts
     const totalCount = allFlashcards.length;
-    const criticalCount = allFlashcards.filter(card => criticalCardIds.has(card.id)).length;
+    const criticalCount = allFlashcards.filter(card => criticalCardIds.has(normalizeCardId(card.id))).length;
     const nonCriticalCount = totalCount - criticalCount;
     
     // Update option texts
@@ -767,10 +815,10 @@ async function updateFilterCounts() {
         filterAll.textContent = `All Questions (${totalCount})`;
     }
     if (filterCritical) {
-        filterCritical.textContent = `Only Red (${criticalCount})`;
+        filterCritical.textContent = `Red Labeled Questions (${criticalCount})`;
     }
     if (filterNonCritical) {
-        filterNonCritical.textContent = `Only Green (${nonCriticalCount})`;
+        filterNonCritical.textContent = `Green Labeled Questions (${nonCriticalCount})`;
     }
 }
 
@@ -803,6 +851,7 @@ function shouldFlipCard(e) {
         e.target.closest('button') || 
         e.target.closest('.answer-navigation-wrapper') ||
         e.target.closest('.filter-section') ||
+        e.target.closest('.question-set-section') ||
         e.target.closest('.card-counter')) {
         return false;
     }
@@ -895,6 +944,21 @@ function setupEventListeners() {
             applyFilter(e.target.value);
         });
     }
+    
+    // Question set selector event listener
+    if (questionSetSelect) {
+        questionSetSelect.addEventListener('change', async (e) => {
+            const selectedFile = e.target.value;
+            // Save current note before switching
+            await saveCurrentNote();
+            // Reset app state
+            currentCardIndex = 0;
+            isFlipped = false;
+            currentFilter = 'all';
+            // Load new question set
+            await loadFlashcards(selectedFile);
+        });
+    }
 
     // Prevent card flip when clicking buttons (event bubbling)
     answerButton.addEventListener('click', (e) => e.stopPropagation());
@@ -906,6 +970,7 @@ function setupEventListeners() {
     if (notesClearButton) notesClearButton.addEventListener('click', (e) => e.stopPropagation());
     if (notesTextarea) notesTextarea.addEventListener('click', (e) => e.stopPropagation());
     if (filterSelect) filterSelect.addEventListener('click', (e) => e.stopPropagation());
+    if (questionSetSelect) questionSetSelect.addEventListener('click', (e) => e.stopPropagation());
 
     // Prevent card flip when clicking links inside cards
     if (questionText) {
@@ -956,7 +1021,14 @@ function startApp() {
     
     console.log('✓ Event listeners setup complete');
     console.log('Loading flashcards...');
-    loadFlashcards().catch(error => {
+    
+    // Load the selected question set (or default)
+    const savedQuestionSet = localStorage.getItem('selectedQuestionSet') || 'questions-answers-128.json';
+    if (questionSetSelect) {
+        questionSetSelect.value = savedQuestionSet;
+    }
+    
+    loadFlashcards(savedQuestionSet).catch(error => {
         console.error('Failed to load flashcards:', error);
         if (questionText) {
             questionText.innerHTML = `Error: ${error.message || 'Failed to load'}`;
