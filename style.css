@@ -627,6 +627,7 @@ body {
     .app-container {
         gap: 20px;
         padding: 0 10px;
+        margin-top: 20px;
     }
     
     .flashcard {
@@ -721,6 +722,7 @@ body {
     .app-container {
         gap: 15px;
         padding: 0 8px;
+        margin-top: 15px;
     }
     
     .flashcard {
