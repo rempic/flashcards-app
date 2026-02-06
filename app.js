@@ -886,29 +886,112 @@ function setupEventListeners() {
         }
     });
 
-    // Handle touch events for mobile
-    flashcard.addEventListener('touchend', (e) => {
+    // Handle touch events for mobile - use touchstart to prevent delay
+    let touchStartTime = 0;
+    let touchStartPos = { x: 0, y: 0 };
+    
+    flashcard.addEventListener('touchstart', (e) => {
         if (shouldFlipCard(e)) {
-            e.preventDefault();
-            flipCard();
+            touchStartTime = Date.now();
+            const touch = e.touches[0] || e.changedTouches[0];
+            touchStartPos.x = touch.clientX;
+            touchStartPos.y = touch.clientY;
         }
     });
     
-    // Navigation buttons
-    answerButton.addEventListener('click', showAnswer);
-    prevButton.addEventListener('click', goToPrevious);
-    nextButton.addEventListener('click', goToNext);
-    shuffleButton.addEventListener('click', shuffleFlashcards);
+    flashcard.addEventListener('touchend', (e) => {
+        if (shouldFlipCard(e)) {
+            const touch = e.changedTouches[0];
+            const touchEndPos = { x: touch.clientX, y: touch.clientY };
+            const touchDuration = Date.now() - touchStartTime;
+            const touchDistance = Math.sqrt(
+                Math.pow(touchEndPos.x - touchStartPos.x, 2) + 
+                Math.pow(touchEndPos.y - touchStartPos.y, 2)
+            );
+            
+            // Only flip if it's a quick tap (not a swipe or long press)
+            if (touchDuration < 300 && touchDistance < 10) {
+                e.preventDefault();
+                flipCard();
+            }
+        }
+    });
+    
+    // Navigation buttons - handle both click and touch for mobile
+    answerButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showAnswer();
+    });
+    answerButton.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        showAnswer();
+    });
+    
+    prevButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        goToPrevious();
+    });
+    prevButton.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        goToPrevious();
+    });
+    
+    nextButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        goToNext();
+    });
+    nextButton.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        goToNext();
+    });
+    
+    shuffleButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        shuffleFlashcards();
+    });
+    shuffleButton.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        shuffleFlashcards();
+    });
 
     // Notes event listeners
     if (notesToggleButton) {
-        notesToggleButton.addEventListener('click', toggleNotesSection);
+        // Handle both click and touch for mobile
+        notesToggleButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleNotesSection();
+        });
+        notesToggleButton.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            toggleNotesSection();
+        });
     }
     if (notesSaveButton) {
-        notesSaveButton.addEventListener('click', saveCurrentNote);
+        notesSaveButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            saveCurrentNote();
+        });
+        notesSaveButton.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            saveCurrentNote();
+        });
     }
     if (notesClearButton) {
-        notesClearButton.addEventListener('click', clearCurrentNote);
+        notesClearButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearCurrentNote();
+        });
+        notesClearButton.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            clearCurrentNote();
+        });
     }
 
     // Critical button events
