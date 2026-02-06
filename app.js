@@ -859,13 +859,13 @@ async function updateFilterCounts() {
     const filterNonCritical = document.getElementById('filter-non-critical');
     
     if (filterAll) {
-        filterAll.textContent = `All Questions (${totalCount})`;
+        filterAll.textContent = `All (${totalCount})`;
     }
     if (filterCritical) {
-        filterCritical.textContent = `Red Labeled Questions (${criticalCount})`;
+        filterCritical.textContent = `Only Red (${criticalCount})`;
     }
     if (filterNonCritical) {
-        filterNonCritical.textContent = `Green Labeled Questions (${nonCriticalCount})`;
+        filterNonCritical.textContent = `Only Green (${nonCriticalCount})`;
     }
 }
 
