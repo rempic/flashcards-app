@@ -35,6 +35,7 @@
         <div class="flashcard-buttons">
             <button type="button" class="critical-button" id="critical-button" aria-label="Mark as critical">
             </button>
+          
             <button class="notes-toggle-button" id="notes-toggle-button" aria-label="Toggle notes">
                 <span class="notes-icon">✏️</span>
             </button>
@@ -66,15 +67,15 @@
         
         <div class="filter-section">
             <select class="filter-select" id="filter-select" aria-label="Filter flashcards">
-                <option value="all">All Questions</option>
-                <option value="critical">Only Red</option>
-                <option value="non-critical">Only Green</option>
+                <option value="all" id="filter-all">All Questions</option>
+                <option value="critical" id="filter-critical">Only Red</option>
+                <option value="non-critical" id="filter-non-critical">Only Green</option>
             </select>
             <button class="shuffle-button" id="shuffle-button" aria-label="Shuffle cards">Shuffle</button>
         </div>
         
         <div class="card-counter">
-            <span id="card-counter">1 / 1</span>
+            <span id="card-counter">1/1</span>
         </div>
     </div>
     

@@ -185,6 +185,7 @@ async function init() {
     updateAnswerButton();
     updateFilterSelect();
     await updateCriticalFilterOption();
+    await updateFilterCounts();
 }
 
 // Convert URLs in text to clickable links
@@ -639,8 +640,9 @@ async function toggleCritical() {
             }
         }
         
-        // Update filter option availability after toggling
+        // Update filter option availability and counts after toggling
         await updateCriticalFilterOption();
+        await updateFilterCounts();
         
         // Don't re-apply filter - keep the current card visible
         // Don't call renderCard - it will reset the card to question side
@@ -704,6 +706,7 @@ async function applyFilter(filterType) {
     updateCounter();
     updateFilterSelect();
     await updateCriticalFilterOption();
+    await updateFilterCounts();
 }
 
 async function hasCriticalCards() {
@@ -727,6 +730,48 @@ async function hasCriticalCards() {
 
 function updateFilterSelect() {
     filterSelect.value = currentFilter;
+    updateFilterCounts();
+}
+
+async function updateFilterCounts() {
+    // Get all critical card IDs
+    const criticalCardIds = new Set();
+    try {
+        const db = await openDB();
+        const transaction = db.transaction([CRITICAL_STORE_NAME], 'readonly');
+        const store = transaction.objectStore(CRITICAL_STORE_NAME);
+        const request = store.getAll();
+        
+        await new Promise((resolve, reject) => {
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+                request.result.forEach(item => criticalCardIds.add(item.cardId));
+                resolve();
+            };
+        });
+    } catch (error) {
+        console.error('Error getting critical cards for counts:', error);
+    }
+    
+    // Calculate counts
+    const totalCount = allFlashcards.length;
+    const criticalCount = allFlashcards.filter(card => criticalCardIds.has(card.id)).length;
+    const nonCriticalCount = totalCount - criticalCount;
+    
+    // Update option texts
+    const filterAll = document.getElementById('filter-all');
+    const filterCritical = document.getElementById('filter-critical');
+    const filterNonCritical = document.getElementById('filter-non-critical');
+    
+    if (filterAll) {
+        filterAll.textContent = `All Questions (${totalCount})`;
+    }
+    if (filterCritical) {
+        filterCritical.textContent = `Only Red (${criticalCount})`;
+    }
+    if (filterNonCritical) {
+        filterNonCritical.textContent = `Only Green (${nonCriticalCount})`;
+    }
 }
 
 async function updateCriticalFilterOption() {
